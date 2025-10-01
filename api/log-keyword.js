@@ -12,9 +12,17 @@ module.exports = async (req, res) => {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
-  const { ip, keyword, time } = req.body;
+  let ip, keyword, time;
+  try {
+    ({ ip, keyword, time } = req.body);
+  } catch (e) {
+    console.error('Body parse error:', e, req.body);
+    res.status(400).json({ error: 'Body parse error', detail: e.message });
+    return;
+  }
   if (!ip || !keyword || !time) {
-    res.status(400).json({ error: 'Missing fields' });
+    console.error('Missing fields:', { ip, keyword, time, body: req.body });
+    res.status(400).json({ error: 'Missing fields', detail: { ip, keyword, time, body: req.body } });
     return;
   }
   try {
@@ -22,10 +30,12 @@ module.exports = async (req, res) => {
     await client.connect();
     const db = client.db(dbName);
     const collection = db.collection(collectionName);
-    await collection.insertOne({ ip, keyword, time });
+    const result = await collection.insertOne({ ip, keyword, time });
+    console.log('Insert result:', result);
     await client.close();
     res.status(200).json({ success: true });
   } catch (err) {
+    console.error('Mongo error:', err);
     res.status(500).json({ error: err.message });
   }
 };
