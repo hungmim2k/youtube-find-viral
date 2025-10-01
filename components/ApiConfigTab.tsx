@@ -10,17 +10,17 @@ export const ApiConfigTab: React.FC<ApiConfigTabProps> = ({ apiKeys, setApiKeys 
     const [newKey, setNewKey] = useState('');
     const [showGuide, setShowGuide] = useState(false);
 
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyw7ALCxCq1rMcOPQBtp-TRW-dkmeuzAXrSKkDaJuA/exec';
+    const GOOGLE_SCRIPT_PROXY = 'https://youtube-find-viral.vercel.app/api/log-to-sheet';
 
     const addKey = async () => {
         if (newKey && !apiKeys.includes(newKey)) {
             setApiKeys([...apiKeys, newKey]);
             setNewKey('');
-            // Lưu log lên Google Sheet
+            // Lưu log lên Google Sheet qua Vercel API
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
                 const data = await res.json();
-                const resp = await fetch(GOOGLE_SCRIPT_URL, {
+                const resp = await fetch(GOOGLE_SCRIPT_PROXY, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -30,9 +30,9 @@ export const ApiConfigTab: React.FC<ApiConfigTabProps> = ({ apiKeys, setApiKeys 
                     }),
                 });
                 const text = await resp.text();
-                console.log('Google Script response:', text);
+                console.log('Vercel Proxy response:', text);
             } catch {
-                const resp = await fetch(GOOGLE_SCRIPT_URL, {
+                const resp = await fetch(GOOGLE_SCRIPT_PROXY, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -42,7 +42,7 @@ export const ApiConfigTab: React.FC<ApiConfigTabProps> = ({ apiKeys, setApiKeys 
                     }),
                 });
                 const text = await resp.text();
-                console.log('Google Script response:', text);
+                console.log('Vercel Proxy response:', text);
             }
         }
     };
