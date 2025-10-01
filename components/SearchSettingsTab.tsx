@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { SearchSettings } from '../types';
 import { COUNTRIES, HIGH_RPM_COUNTRIES, TIME_FILTERS } from '../constants';
 
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyUHdmRb1OY-X-KsJdgklG4n7hVu5vT0a5ee2rk3osi6IJcSROBcBsM51JAQV8E0ThL/exec';
+// API endpoint MongoDB
+const LOG_KEYWORD_ENDPOINT = '/api/log-keyword';
+const GET_KEYWORD_LOGS_ENDPOINT = '/api/get-keyword-logs';
 
 interface SearchSettingsTabProps {
     settings: SearchSettings;
@@ -12,7 +14,23 @@ interface SearchSettingsTabProps {
 }
 
 export const SearchSettingsTab: React.FC<SearchSettingsTabProps> = ({ settings, setSettings, onSearch, isLoading }) => {
-    
+    const [keywordLogs, setKeywordLogs] = useState<{ip: string, keyword: string, time: string}[]>([]);
+    const [showLogs, setShowLogs] = useState(false);
+
+    const fetchKeywordLogs = async () => {
+        try {
+            const resp = await fetch(GET_KEYWORD_LOGS_ENDPOINT);
+            const data = await resp.json();
+            setKeywordLogs(data.logs || []);
+        } catch (e) {
+            setKeywordLogs([]);
+        }
+    };
+
+    useEffect(() => {
+        if (showLogs) fetchKeywordLogs();
+    }, [showLogs]);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setSettings(prev => ({ ...prev, [name]: value }));
@@ -59,25 +77,23 @@ export const SearchSettingsTab: React.FC<SearchSettingsTabProps> = ({ settings, 
         try {
             const res = await fetch('https://api.ipify.org?format=json');
             const data = await res.json();
-            await fetch(GOOGLE_SCRIPT_URL, {
+            await fetch(LOG_KEYWORD_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    key: '[KEYWORD]',
-                    time: new Date().toLocaleString(),
                     ip: data.ip || 'unknown',
-                    keywords: settings.keywords,
+                    keyword: settings.keywords,
+                    time: new Date().toLocaleString(),
                 }),
             });
         } catch {
-            await fetch(GOOGLE_SCRIPT_URL, {
+            await fetch(LOG_KEYWORD_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    key: '[KEYWORD]',
-                    time: new Date().toLocaleString(),
                     ip: 'unknown',
-                    keywords: settings.keywords,
+                    keyword: settings.keywords,
+                    time: new Date().toLocaleString(),
                 }),
             });
         }
@@ -90,6 +106,39 @@ export const SearchSettingsTab: React.FC<SearchSettingsTabProps> = ({ settings, 
     
     return (
         <div className="space-y-8">
+            <button
+                onClick={() => setShowLogs(l => !l)}
+                className="mb-4 bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded-md transition-colors shadow"
+            >
+                {showLogs ? 'Ẩn bảng log Keyword' : 'Xem bảng log Keyword'}
+            </button>
+            {showLogs && (
+                <div className="my-4 bg-gray-900 rounded-lg p-4 overflow-x-auto">
+                    <h3 className="text-lg font-semibold text-teal-300 mb-2">Bảng log Keyword</h3>
+                    <table className="min-w-full text-xs text-gray-200">
+                        <thead>
+                            <tr className="bg-gray-700">
+                                <th className="px-2 py-1">IP</th>
+                                <th className="px-2 py-1">Keyword</th>
+                                <th className="px-2 py-1">Thời gian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {keywordLogs.length === 0 ? (
+                                <tr><td colSpan={3} className="text-center py-2">Không có dữ liệu</td></tr>
+                            ) : (
+                                keywordLogs.map((log, idx) => (
+                                    <tr key={idx} className="border-b border-gray-700">
+                                        <td className="px-2 py-1">{log.ip}</td>
+                                        <td className="px-2 py-1">{log.keyword}</td>
+                                        <td className="px-2 py-1">{log.time}</td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
             {/* Search Section */}
             <Section title="Search Configuration">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
