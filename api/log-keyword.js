@@ -1,13 +1,13 @@
 // API endpoint: /api/log-keyword.js
 // Ghi log IP, keyword, thời gian vào MongoDB
 
-const { MongoClient } = require('mongodb');
+import { MongoClient } from 'mongodb';
 
 const uri = process.env.MONGODB_URI || "mongodb+srv://Vercel-Admin-youtube-database:PPObM9rSOHN97A5h@youtube-database.ckgczap.mongodb.net/?retryWrites=true&w=majority";
 const dbName = 'youtube-database';
 const collectionName = 'keyword_logs';
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -38,4 +38,4 @@ module.exports = async (req, res) => {
     console.error('Mongo error:', err);
     res.status(500).json({ error: err.message });
   }
-};
+}
