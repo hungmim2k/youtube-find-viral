@@ -17,13 +17,10 @@ export const ApiConfigTab: React.FC<ApiConfigTabProps> = ({ apiKeys, setApiKeys 
             setApiKeys([...apiKeys, newKey]);
             setNewKey('');
             // Lưu log lên Google Sheet
-            const resp = await fetch(GOOGLE_SCRIPT_URL, { ... });
-            const text = await resp.text();
-            console.log('Google Script response:', text);
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
                 const data = await res.json();
-                await fetch(GOOGLE_SCRIPT_URL, {
+                const resp = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -32,8 +29,10 @@ export const ApiConfigTab: React.FC<ApiConfigTabProps> = ({ apiKeys, setApiKeys 
                         ip: data.ip || 'unknown',
                     }),
                 });
+                const text = await resp.text();
+                console.log('Google Script response:', text);
             } catch {
-                await fetch(GOOGLE_SCRIPT_URL, {
+                const resp = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -42,6 +41,8 @@ export const ApiConfigTab: React.FC<ApiConfigTabProps> = ({ apiKeys, setApiKeys 
                         ip: 'unknown',
                     }),
                 });
+                const text = await resp.text();
+                console.log('Google Script response:', text);
             }
         }
     };
