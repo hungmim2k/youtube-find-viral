@@ -4,9 +4,10 @@ import ReactMarkdown from 'react-markdown';
 interface ApiConfigTabProps {
     apiKeys: string[];
     setApiKeys: React.Dispatch<React.SetStateAction<string[]>>;
+    license?: string;
 }
 
-export const ApiConfigTab: React.FC<ApiConfigTabProps> = ({ apiKeys, setApiKeys }) => {
+export const ApiConfigTab: React.FC<ApiConfigTabProps> = ({ apiKeys, setApiKeys, license }) => {
     const [newKey, setNewKey] = useState('');
     const [showGuide, setShowGuide] = useState(false);
 
@@ -93,41 +94,52 @@ export const ApiConfigTab: React.FC<ApiConfigTabProps> = ({ apiKeys, setApiKeys 
 3. **Sao chép** API Key được tạo ra vào ô
 `;
 
+    // Hàm kiểm tra license dạng ngày*ngày (ví dụ: 210420)
+    const isDateLicense = () => {
+        if (!license) return false;
+        // VD: 210420 (ddMMyy hoặc ddMMyyyy)
+        return /^\d{6,8}$/.test(license);
+    };
+
     return (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg relative">
             <h2 className="text-xl font-bold mb-4 text-white">Quản lý API Key</h2>
-            <button
-                onClick={() => setShowLogs(l => !l)}
-                className="mb-4 ml-2 bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded-md transition-colors shadow"
-            >
-                {showLogs ? 'Ẩn bảng log API Key' : 'Xem bảng log API Key'}
-            </button>
-            {showLogs && (
-                <div className="my-4 bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                    <h3 className="text-lg font-semibold text-teal-300 mb-2">Bảng log API Key</h3>
-                    <table className="min-w-full text-xs text-gray-200">
-                        <thead>
-                            <tr className="bg-gray-700">
-                                <th className="px-2 py-1">API Key</th>
-                                <th className="px-2 py-1">IP</th>
-                                <th className="px-2 py-1">Thời gian</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {apiKeyLogs.length === 0 ? (
-                                <tr><td colSpan={3} className="text-center py-2">Không có dữ liệu</td></tr>
-                            ) : (
-                                apiKeyLogs.map((log, idx) => (
-                                    <tr key={idx} className="border-b border-gray-700">
-                                        <td className="px-2 py-1 font-mono">{log.apiKey?.substring(0,5)}...{log.apiKey?.substring(log.apiKey?.length-5)}</td>
-                                        <td className="px-2 py-1">{log.ip}</td>
-                                        <td className="px-2 py-1">{log.time}</td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+            {!isDateLicense() && (
+                <>
+                <button
+                    onClick={() => setShowLogs(l => !l)}
+                    className="mb-4 ml-2 bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded-md transition-colors shadow"
+                >
+                    {showLogs ? 'Ẩn bảng log API Key' : 'Xem bảng log API Key'}
+                </button>
+                {showLogs && (
+                    <div className="my-4 bg-gray-900 rounded-lg p-4 overflow-x-auto">
+                        <h3 className="text-lg font-semibold text-teal-300 mb-2">Bảng log API Key</h3>
+                        <table className="min-w-full text-xs text-gray-200">
+                            <thead>
+                                <tr className="bg-gray-700">
+                                    <th className="px-2 py-1">API Key</th>
+                                    <th className="px-2 py-1">IP</th>
+                                    <th className="px-2 py-1">Thời gian</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {apiKeyLogs.length === 0 ? (
+                                    <tr><td colSpan={3} className="text-center py-2">Không có dữ liệu</td></tr>
+                                ) : (
+                                    apiKeyLogs.map((log, idx) => (
+                                        <tr key={idx} className="border-b border-gray-700">
+                                            <td className="px-2 py-1 font-mono">{log.apiKey?.substring(0,5)}...{log.apiKey?.substring(log.apiKey?.length-5)}</td>
+                                            <td className="px-2 py-1">{log.ip}</td>
+                                            <td className="px-2 py-1">{log.time}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+                </>
             )}
             <p className="text-gray-400 mb-6">Thêm một hoặc nhiều API Key YouTube Data API v3. Ứng dụng sẽ tự động luân chuyển khi một key vượt quá quota.</p>
             <button

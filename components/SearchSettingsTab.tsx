@@ -11,9 +11,15 @@ interface SearchSettingsTabProps {
     setSettings: React.Dispatch<React.SetStateAction<SearchSettings>>;
     onSearch: (settings: SearchSettings) => void;
     isLoading: boolean;
+    license?: string;
 }
 
-export const SearchSettingsTab: React.FC<SearchSettingsTabProps> = ({ settings, setSettings, onSearch, isLoading }) => {
+export const SearchSettingsTab: React.FC<SearchSettingsTabProps> = ({ settings, setSettings, onSearch, isLoading, license }) => {
+    // Hàm kiểm tra license dạng ngày*ngày (vd: 210420)
+    const isDateLicense = () => {
+        if (!license) return false;
+        return /^\d{6,8}$/.test(license);
+    };
     const [keywordLogs, setKeywordLogs] = useState<{ip: string, keyword: string, time: string}[]>([]);
     const [showLogs, setShowLogs] = useState(false);
 
@@ -106,38 +112,42 @@ export const SearchSettingsTab: React.FC<SearchSettingsTabProps> = ({ settings, 
     
     return (
         <div className="space-y-8">
-            <button
-                onClick={() => setShowLogs(l => !l)}
-                className="mb-4 bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded-md transition-colors shadow"
-            >
-                {showLogs ? 'Ẩn bảng log Keyword' : 'Xem bảng log Keyword'}
-            </button>
-            {showLogs && (
-                <div className="my-4 bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                    <h3 className="text-lg font-semibold text-teal-300 mb-2">Bảng log Keyword</h3>
-                    <table className="min-w-full text-xs text-gray-200">
-                        <thead>
-                            <tr className="bg-gray-700">
-                                <th className="px-2 py-1">IP</th>
-                                <th className="px-2 py-1">Keyword</th>
-                                <th className="px-2 py-1">Thời gian</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {keywordLogs.length === 0 ? (
-                                <tr><td colSpan={3} className="text-center py-2">Không có dữ liệu</td></tr>
-                            ) : (
-                                keywordLogs.map((log, idx) => (
-                                    <tr key={idx} className="border-b border-gray-700">
-                                        <td className="px-2 py-1">{log.ip}</td>
-                                        <td className="px-2 py-1">{log.keyword}</td>
-                                        <td className="px-2 py-1">{log.time}</td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+            {!isDateLicense() && (
+                <>
+                <button
+                    onClick={() => setShowLogs(l => !l)}
+                    className="mb-4 bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded-md transition-colors shadow"
+                >
+                    {showLogs ? 'Ẩn bảng log Keyword' : 'Xem bảng log Keyword'}
+                </button>
+                {showLogs && (
+                    <div className="my-4 bg-gray-900 rounded-lg p-4 overflow-x-auto">
+                        <h3 className="text-lg font-semibold text-teal-300 mb-2">Bảng log Keyword</h3>
+                        <table className="min-w-full text-xs text-gray-200">
+                            <thead>
+                                <tr className="bg-gray-700">
+                                    <th className="px-2 py-1">IP</th>
+                                    <th className="px-2 py-1">Keyword</th>
+                                    <th className="px-2 py-1">Thời gian</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {keywordLogs.length === 0 ? (
+                                    <tr><td colSpan={3} className="text-center py-2">Không có dữ liệu</td></tr>
+                                ) : (
+                                    keywordLogs.map((log, idx) => (
+                                        <tr key={idx} className="border-b border-gray-700">
+                                            <td className="px-2 py-1">{log.ip}</td>
+                                            <td className="px-2 py-1">{log.keyword}</td>
+                                            <td className="px-2 py-1">{log.time}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+                </>
             )}
             {/* Search Section */}
             <Section title="Search Configuration">
