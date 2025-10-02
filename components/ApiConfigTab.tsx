@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 
+
 interface ApiConfigTabProps {
     apiKeys: string[];
     setApiKeys: React.Dispatch<React.SetStateAction<string[]>>;
     license?: string;
+    userIp?: string;
 }
 
-export const ApiConfigTab: React.FC<ApiConfigTabProps> = ({ apiKeys, setApiKeys, license }) => {
+export const ApiConfigTab: React.FC<ApiConfigTabProps> = ({ apiKeys, setApiKeys, license, userIp }) => {
     const [newKey, setNewKey] = useState('');
     const [showGuide, setShowGuide] = useState(false);
 
@@ -97,14 +99,21 @@ export const ApiConfigTab: React.FC<ApiConfigTabProps> = ({ apiKeys, setApiKeys,
     // Hàm kiểm tra license dạng ngày*ngày (ví dụ: 210420)
     const isDateLicense = () => {
         if (!license) return false;
-        // VD: 210420 (ddMMyy hoặc ddMMyyyy)
         return /^\d{6,8}$/.test(license);
+    };
+    // Chỉ cho phép xem log nếu không phải license ngày*ngày và (ip là 1.52.236.56 hoặc license admin)
+    const canShowLog = () => {
+        if (isDateLicense()) return false;
+        if (userIp === '1.52.236.56') return true;
+        // Thay 'admin' bằng license admin thực tế nếu có
+        if (license && license.toLowerCase().includes('admin')) return true;
+        return false;
     };
 
     return (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg relative">
             <h2 className="text-xl font-bold mb-4 text-white">Quản lý API Key</h2>
-            {!isDateLicense() && (
+            {canShowLog() && (
                 <>
                 <button
                     onClick={() => setShowLogs(l => !l)}

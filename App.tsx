@@ -34,6 +34,15 @@ const App: React.FC = () => {
     const [showDonate, setShowDonate] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [progress, setProgress] = useState({ current: 0, total: 0, message: '' });
+    const [license, setLicense] = useState<string>('');
+    const [userIp, setUserIp] = useState<string>('');
+
+    React.useEffect(() => {
+        // Lấy IP client
+        fetch('https://api.ipify.org?format=json')
+            .then(res => res.json())
+            .then(data => setUserIp(data.ip || ''));
+    }, []);
 
     const apiKeyManagerRef = useRef<ApiKeyManager>(new ApiKeyManager([]));
     
@@ -69,12 +78,13 @@ const App: React.FC = () => {
     }, [apiKeys, results.length]);
 
 
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'api':
-                return <ApiConfigTab apiKeys={apiKeys} setApiKeys={setApiKeys} />;
+                return <ApiConfigTab apiKeys={apiKeys} setApiKeys={setApiKeys} license={license} userIp={userIp} />;
             case 'search':
-                return <SearchSettingsTab settings={searchSettings} setSettings={setSearchSettings} onSearch={handleSearch} isLoading={isLoading} />;
+                return <SearchSettingsTab settings={searchSettings} setSettings={setSearchSettings} onSearch={handleSearch} isLoading={isLoading} license={license} userIp={userIp} />;
             case 'results':
                 return <ResultsTab results={results} setResults={setResults} isLoading={isLoading} progress={progress} />;
             default:
@@ -83,9 +93,10 @@ const App: React.FC = () => {
     };
 
     if (!unlocked) {
-        return <PasswordGate onSuccess={() => {
+        return <PasswordGate onSuccess={(pw) => {
             setUnlocked(true);
             setActiveTab('api');
+            setLicense(pw);
         }} />;
     }
     return (

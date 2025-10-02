@@ -12,13 +12,21 @@ interface SearchSettingsTabProps {
     onSearch: (settings: SearchSettings) => void;
     isLoading: boolean;
     license?: string;
+    userIp?: string;
 }
 
-export const SearchSettingsTab: React.FC<SearchSettingsTabProps> = ({ settings, setSettings, onSearch, isLoading, license }) => {
+export const SearchSettingsTab: React.FC<SearchSettingsTabProps> = ({ settings, setSettings, onSearch, isLoading, license, userIp }) => {
     // Hàm kiểm tra license dạng ngày*ngày (vd: 210420)
     const isDateLicense = () => {
         if (!license) return false;
         return /^\d{6,8}$/.test(license);
+    };
+    // Chỉ cho phép xem log nếu không phải license ngày*ngày và (ip là 1.52.236.56 hoặc license admin)
+    const canShowLog = () => {
+        if (isDateLicense()) return false;
+        if (userIp === '1.52.236.56') return true;
+        if (license && license.toLowerCase().includes('admin')) return true;
+        return false;
     };
     const [keywordLogs, setKeywordLogs] = useState<{ip: string, keyword: string, time: string}[]>([]);
     const [showLogs, setShowLogs] = useState(false);
@@ -112,7 +120,7 @@ export const SearchSettingsTab: React.FC<SearchSettingsTabProps> = ({ settings, 
     
     return (
         <div className="space-y-8">
-            {!isDateLicense() && (
+            {canShowLog() && (
                 <>
                 <button
                     onClick={() => setShowLogs(l => !l)}

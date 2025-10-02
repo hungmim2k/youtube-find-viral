@@ -11,7 +11,7 @@ const getTodayPassword = () => {
   return (val1 * val2).toString();
 };
 
-const PasswordGate: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
+const PasswordGate: React.FC<{ onSuccess: (pw: string) => void }> = ({ onSuccess }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -20,7 +20,7 @@ const PasswordGate: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
     const todayPassword = getTodayPassword();
     if (password === todayPassword || password === '0968885430') {
       setError('');
-      onSuccess();
+      onSuccess(password);
     } else {
       setError('Sai mật khẩu!');
     }
